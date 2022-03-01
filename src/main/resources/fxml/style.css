@@ -1,0 +1,12 @@
+.combo-box .list-view .list-cell{
+    -fx-text-fill: #63b175;
+    -fx-font: 12px "Verdana";
+    -fx-font-weight: bold;
+}
+
+.combo-box  > .list-cell {
+    -fx-text-fill: #63b175;
+    -fx-font: 12px "Verdana";
+    -fx-font-weight: bold;
+    -fx-background-color: #f4f4f4;
+}

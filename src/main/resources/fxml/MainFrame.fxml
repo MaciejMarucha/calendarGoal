@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#goalsShortcuts" prefHeight="900.0" prefWidth="1649.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainFrameController">
+    <children>
+        <VBox alignment="CENTER" prefHeight="900.0" prefWidth="945.0">
+            <children>
+      
+              <!--        <fx:include fx:id="notepad" source="Notepad.fxml"/>-->
+              <CheckBox mnemonicParsing="false" onAction="#onOffDialog" prefHeight="21.0" prefWidth="309.0" text="Wylacz skróty klawiszowe" textFill="#dd0a0a">
+                  <font>
+                      <Font name="System Bold" size="15.0" />
+                  </font>
+              </CheckBox>
+                <Label prefHeight="25.0" prefWidth="109.0" text="WYBIERZ CEL">
+                    <font>
+                        <Font size="16.0" />
+                    </font>
+                </Label>
+                <Label prefHeight="17.0" prefWidth="308.0" text="SKRÓTY KLAWISZOWE q-poprzedni cel, w- następny" textFill="#dd0a0a" />
+                <ComboBox fx:id="goalCombo" onAction="#onActionCombobox" prefHeight="35.0" prefWidth="1050.0" stylesheets="@style.css" />
+                <Label fx:id="goalLabell" alignment="CENTER" contentDisplay="CENTER" prefHeight="113.0" prefWidth="1048.0" textAlignment="CENTER" textFill="#fa0f1f" wrapText="true">
+                    <font>
+                        <Font name="Verdana Bold" size="26.0" />
+                    </font>
+                </Label>
+                <TableView fx:id="goalsTable" prefHeight="328.0" prefWidth="1050.0">
+                    <columns>
+                        <TableColumn fx:id="colGoalName" prefWidth="1044.0" text="NAZWA CELU" />
+                    </columns>
+                    <contextMenu>
+                        <ContextMenu>
+                            <items>
+                                <MenuItem fx:id="deleteGoal" mnemonicParsing="false" onAction="#deleteGoalMethod" text="Delete" />
+                                <MenuItem fx:id="editGoal" mnemonicParsing="false" onAction="#editGoalMethod" text="Edit" />
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
+                </TableView>
+                <Pane prefHeight="114.0" prefWidth="1050.0">
+                    <children>
+                        <HBox layoutY="23.0" prefHeight="0.0" prefWidth="431.0">
+                            <children>
+                                <Label text="Goal id: " />
+                                <Label fx:id="goalID" prefHeight="17.0" prefWidth="33.0" />
+                            </children>
+                        </HBox>
+                        <Label layoutX="377.0" layoutY="6.0" text="WPISZ NOWY CEL" />
+                        <TextField fx:id="newGoalTextField" layoutX="86.0" layoutY="45.0" prefHeight="25.0" prefWidth="708.0" />
+                        <Label layoutY="49.0" prefHeight="17.0" prefWidth="67.0" text="Nazwa celu:" />
+                        <HBox alignment="CENTER" layoutX="14.0" layoutY="70.0" prefHeight="25.0" prefWidth="780.0">
+                            <children>
+                                <Button mnemonicParsing="false" onAction="#reset" text="RESET">
+                                    <HBox.margin>
+                                        <Insets right="20.0" />
+                                    </HBox.margin>
+                                </Button>
+                                <Button fx:id="newGoalBtn" mnemonicParsing="false" onAction="#addNewGoal" text="DODAJ NOWY CEL" />
+                            </children>
+                        </HBox>
+                    </children>
+                </Pane>
+            </children>
+        </VBox>
+        <Pane layoutX="1098.0" layoutY="14.0" prefHeight="303.0" prefWidth="424.0">
+            <children>
+                <Pane layoutX="101.0" layoutY="-2.0" prefHeight="33.0" prefWidth="293.0">
+                    <children>
+
+                        <Label fx:id="labMinus" onMouseClicked="#decreaseMon" prefHeight="23.0" prefWidth="20.0" text="&lt;" />
+                        <Label fx:id="monthLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="28.0" layoutY="2.0" prefHeight="23.0" prefWidth="143.0" textAlignment="CENTER">
+                            <font>
+                                <Font size="16.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="labPlus" layoutX="180.0" layoutY="3.0" onMouseClicked="#increaseMon" prefHeight="23.0" prefWidth="20.0" text="&gt;" />
+                    </children>
+                </Pane>
+
+                <FlowPane layoutY="24.0" prefHeight="17.0" prefWidth="407.0" style="-fx-background-color: orange;">
+                    <children>
+                        <Label text="PN">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label text="WT">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label text="ŚR">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label text="CZ">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label prefHeight="19.0" prefWidth="64.0" text="PT">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label text="SB">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                        <Label text="ND">
+                            <padding>
+                                <Insets left="20.0" right="20.0" />
+                            </padding>
+                            <font>
+                                <Font size="13.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </FlowPane>
+                <Pane layoutX="3.0" layoutY="58.0" prefHeight="238.0" prefWidth="401.0">
+                    <children>
+                        <Button fx:id="d1" layoutX="6.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d2" layoutX="66.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d3" layoutX="126.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d4" layoutX="186.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d5" layoutX="246.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d6" layoutX="306.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d7" layoutX="366.0" layoutY="1.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d8" layoutX="6.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d9" layoutX="66.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d10" layoutX="126.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d11" layoutX="186.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d12" layoutX="246.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d13" layoutX="306.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d14" layoutX="366.0" layoutY="39.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d15" layoutX="6.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d16" layoutX="66.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d17" layoutX="126.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d18" layoutX="186.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d19" layoutX="246.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d20" layoutX="306.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d21" layoutX="366.0" layoutY="77.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d22" layoutX="6.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d23" layoutX="66.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d24" layoutX="126.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d25" layoutX="186.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d26" layoutX="246.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d27" layoutX="306.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d28" layoutX="366.0" layoutY="115.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d29" layoutX="6.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d30" layoutX="66.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d31" layoutX="126.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d32" layoutX="186.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d33" layoutX="246.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d34" layoutX="306.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d35" layoutX="366.0" layoutY="153.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d36" layoutX="6.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d37" layoutX="66.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d38" layoutX="126.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d39" layoutX="186.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d40" layoutX="246.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d41" layoutX="306.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                        <Button fx:id="d42" layoutX="366.0" layoutY="191.0" mnemonicParsing="false" onMouseClicked="#clickedBtn" prefHeight="25.0" prefWidth="32.0" />
+                    </children>
+                </Pane>
+            </children>
+        </Pane>
+        <Pane layoutX="995.0" layoutY="306.0" prefHeight="314.0" prefWidth="635.0" style="-fx-background-color: #f4f4f4;">
+            <children>
+                <Label layoutX="37.0" layoutY="6.0" prefHeight="50.0" prefWidth="477.0" text="Obecna liczba kolejnych sukcesów: " textFill="#63b175">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label layoutX="37.0" layoutY="59.0" prefHeight="50.0" prefWidth="484.0" text="Rekordowa liczba sukcesów: " textFill="#63b175">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label layoutX="37.0" layoutY="109.0" prefHeight="50.0" prefWidth="337.0" text="Procent sukcesów: " textFill="#63b175">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label fx:id="currentSuccessNumberLab" layoutX="527.0" layoutY="14.0" prefHeight="45.0" prefWidth="67.0">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label fx:id="recordSuccessNumberLab" layoutX="527.0" layoutY="62.0" prefHeight="45.0" prefWidth="67.0">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label fx:id="successPercentageLab" layoutX="499.0" layoutY="112.0" prefHeight="45.0" prefWidth="82.0">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label layoutX="37.0" layoutY="159.0" prefHeight="69.0" prefWidth="170.0" text="Punkty: " textFill="#d7163c">
+                    <font>
+                        <Font size="47.0" />
+                    </font>
+                </Label>
+                <ProgressBar fx:id="progressBar" layoutX="383.0" layoutY="185.0" prefWidth="200.0" progress="0.0" />
+                <Label fx:id="pointsLabel" layoutX="222.0" layoutY="171.0" prefHeight="17.0" prefWidth="50.0" text="0">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+                <Label layoutX="37.0" layoutY="228.0" prefHeight="69.0" prefWidth="170.0" text="Poziom:" textFill="#d7163c">
+                    <font>
+                        <Font size="47.0" />
+                    </font>
+                </Label>
+                <Label fx:id="levelLabel" layoutX="222.0" layoutY="240.0" prefHeight="17.0" prefWidth="50.0" text="0">
+                    <font>
+                        <Font size="30.0" />
+                    </font>
+                </Label>
+            </children>
+        </Pane>
+        <Pane layoutX="1050.0" layoutY="638.0" prefHeight="249.0" prefWidth="519.0">
+            <children>
+                <MenuBar layoutX="14.0" layoutY="14.0">
+                    <menus>
+                        <Menu mnemonicParsing="false" text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onActionSave" text="Save">
+                                    <accelerator>
+                                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                                    </accelerator>
+                                </MenuItem>
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+                <HBox layoutX="14.0" layoutY="42.0" prefHeight="198.0" prefWidth="478.0">
+                    <children>
+                        <TextArea fx:id="textAreaText" prefHeight="188.0" prefWidth="478.0" />
+                    </children>
+                </HBox>
+            <Label layoutX="80.0" layoutY="18.0" text="Notatki dla danego celu" />
+            </children>
+        </Pane>
+        <Button fx:id="refreshBtn" layoutX="1532.0" layoutY="261.0" mnemonicParsing="false" onAction="#refreshMethod" text="Odśwież" />
+    </children>
+</Pane>

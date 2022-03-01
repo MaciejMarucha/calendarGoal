@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="181.0" prefWidth="280.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.DialogController">
+    <children>
+        <Pane prefHeight="106.0" prefWidth="280.0">
+            <children>
+                <Label alignment="TOP_CENTER" contentDisplay="TOP" layoutX="6.0" layoutY="14.0" prefHeight="97.0"
+                       prefWidth="269.0"
+                       text="TAK - cel zrealizowany w 100%  &#10;NIE - cel niezrealizowany &#10;PÓŁ - cel zrealizowany połowicznie &#10;NIEOB - cel nie obowiązywał w dany dzień &#10;COFNIJ - usuwa zaznaczenie"
+                       wrapText="true"/>
+            </children>
+        </Pane>
+        <HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="75.0"
+              prefWidth="280.0">
+            <children>
+                <Pane prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#greenBtnDialogMethod" prefHeight="75.0"
+                                prefWidth="63.0" style="-fx-background-color: green;" text="TAK"/>
+                    </children>
+                </Pane>
+                <Pane prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#redBtnDialogMethod" prefHeight="75.0"
+                                prefWidth="63.0" style="-fx-background-color: red;" text="NIE"/>
+                    </children>
+                </Pane>
+                <Pane prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#yellowBtnDialogMethod" prefHeight="75.0"
+                                prefWidth="63.0" style="-fx-background-color: yellow;" text="PÓŁ"/>
+                    </children>
+                </Pane>
+                <Pane prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <Button mnemonicParsing="false" onAction="#grayBtnDialogMethod" prefHeight="75.0"
+                                prefWidth="63.0" style="-fx-background-color: gray;" text="NIEOB"/>
+                    </children>
+                </Pane>
+                <Pane prefHeight="200.0" prefWidth="200.0">
+                    <children>
+                        <Button fx:id="returnBtn" layoutX="6.0" mnemonicParsing="false" onAction="#cancel"
+                                prefHeight="75.0" prefWidth="56.0" text="COFNIJ"/>
+                    </children>
+                </Pane>
+            </children>
+        </HBox>
+    </children>
+</VBox>
