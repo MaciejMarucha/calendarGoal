@@ -171,6 +171,8 @@ public class MainFrameController {
     @FXML
     private TableColumn<Goal, String> colGoalName;
     @FXML
+    private TableColumn<Goal, String> colGoalName2;
+    @FXML
     private TextField newGoalTextField;
     @FXML
     private Button newGoalBtn;
@@ -213,8 +215,8 @@ public class MainFrameController {
     @FXML
     public void initialize() {
         initializeFrame();
-
-        GoalDAO.getInstance().findAllInactive().forEach(e -> {
+        List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
+        inactiveGoalList.forEach(e -> {
             goalObservableList.add(e);
         });
 
@@ -224,13 +226,13 @@ public class MainFrameController {
         this.goalCombo.setItems(goalStringObservableList);
         goalStringProperty.bind(this.goalCombo.valueProperty());
         colGoalName.setCellValueFactory(new PropertyValueFactory<>("goalName"));
-        activeGoalsTable.getItems().clear();
+        colGoalName2.setCellValueFactory(new PropertyValueFactory<>("goalName"));
+//        ta lista w tym miejscu jest pusta wiec nie potrzebne jest uzywanie metody clear()
+//        activeGoalsTable.getItems().clear();
 
-        List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
-        activeGoalsTable.getItems().addAll(activeGoalList);
+        inactiveGoalsTable.getItems().addAll(inactiveGoalList);
         initializeDragAndDrop();
 //        installEventHandler(goalCombo);
-
         if (eolProperty.get() == null) {
             throw new IllegalStateException("Could not determine system default end-of-line marker");
         }
@@ -275,8 +277,12 @@ public class MainFrameController {
                 });
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab oldTab, Tab newTab) -> {
+            //setting typed tab
             if (newTab == activeTab) {
                 System.out.println("activeTab");
+                goalObservableList.clear();
+                goalStringObservableList.clear();
+                List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
                 activeGoalList.forEach(e -> {
                     goalObservableList.add(e);
                 });
@@ -288,8 +294,10 @@ public class MainFrameController {
                 activeGoalsTable.getItems().addAll(activeGoalList);
             } else if (newTab == inactiveTab) {
                 System.out.println("inactiveTab");
-                List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
-                inactiveGoalList.forEach(e -> {
+                goalObservableList.clear();
+                goalStringObservableList.clear();
+                List<Goal> inactiveGoalList2 = GoalDAO.getInstance().findAllInactive();
+                inactiveGoalList2.forEach(e -> {
                     goalObservableList.add(e);
                 });
                 goalObservableList.forEach(e -> {
@@ -297,11 +305,11 @@ public class MainFrameController {
                 });
                 this.goalCombo.setItems(goalStringObservableList);
                 inactiveGoalsTable.getItems().clear();
-                inactiveGoalsTable.getItems().addAll(inactiveGoalList);
+                inactiveGoalsTable.getItems().addAll(inactiveGoalList2);
             }
         });
-
-
+        //setting the activeTab as default
+        tabPane.getSelectionModel().select(activeTab);
         updatePoints();
     }
 
@@ -386,7 +394,7 @@ public class MainFrameController {
     @FXML
     public void clickedBtn(MouseEvent mouseEvent) {
         Node node = (Node) mouseEvent.getSource();
-        if (getGoalStringProperty() != "" && getGoalStringProperty() != null) {
+        if (!getGoalStringProperty().equals("") && getGoalStringProperty() != null) {
 
             FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/Dialog.fxml"));
             Parent parent = null;
@@ -675,9 +683,7 @@ public class MainFrameController {
 
     @FXML
     public void onOffDialog(ActionEvent actionEvent) {
-        if (this.onOffDialog)
-            this.onOffDialog = false;
-        else this.onOffDialog = true;
+        this.onOffDialog = !this.onOffDialog;
 //        progressBar.setProgress();
     }
 
@@ -694,61 +700,6 @@ public class MainFrameController {
     }
 
     public void initializeDragAndDrop() {
-        activeGoalsTable.setRowFactory(tv -> {
-            TableRow<Goal> row = new TableRow<>();
-
-            row.setOnDragDetected(event -> {
-                if (!row.isEmpty()) {
-                    Integer index = row.getIndex();
-                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
-                    db.setDragView(row.snapshot(null, null));
-                    ClipboardContent cc = new ClipboardContent();
-                    cc.put(SERIALIZED_MIME_TYPE, index);
-                    db.setContent(cc);
-                    event.consume();
-                }
-            });
-
-            row.setOnDragOver(event -> {
-                Dragboard db = event.getDragboard();
-                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
-                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
-                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-                        event.consume();
-                    }
-                }
-            });
-
-            row.setOnDragDropped(event -> {
-                Dragboard db = event.getDragboard();
-                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
-                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
-                    Goal draggedGoal = activeGoalsTable.getItems().remove(draggedIndex);
-
-                    int dropIndex;
-
-                    if (row.isEmpty()) {
-                        dropIndex = activeGoalsTable.getItems().size();
-                    } else {
-                        dropIndex = row.getIndex();
-                    }
-
-                    activeGoalsTable.getItems().add(dropIndex, draggedGoal);
-
-                    event.setDropCompleted(true);
-                    activeGoalsTable.getSelectionModel().select(dropIndex);
-                    try {
-                        changeGoalIndex(dropIndex, draggedGoal);
-                    } catch (FaultlException e) {
-                        e.printStackTrace();
-                    }
-                    event.consume();
-                }
-            });
-
-            return row;
-        });
-
         inactiveGoalsTable.setRowFactory(tv -> {
             TableRow<Goal> row = new TableRow<>();
 
@@ -804,6 +755,60 @@ public class MainFrameController {
             return row;
         });
 
+        activeGoalsTable.setRowFactory(tv -> {
+            TableRow<Goal> row = new TableRow<>();
+
+            row.setOnDragDetected(event -> {
+                if (!row.isEmpty()) {
+                    Integer index = row.getIndex();
+                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+                    db.setDragView(row.snapshot(null, null));
+                    ClipboardContent cc = new ClipboardContent();
+                    cc.put(SERIALIZED_MIME_TYPE, index);
+                    db.setContent(cc);
+                    event.consume();
+                }
+            });
+
+            row.setOnDragOver(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
+                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                        event.consume();
+                    }
+                }
+            });
+
+            row.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
+                    Goal draggedGoal = activeGoalsTable.getItems().remove(draggedIndex);
+
+                    int dropIndex;
+
+                    if (row.isEmpty()) {
+                        dropIndex = activeGoalsTable.getItems().size();
+                    } else {
+                        dropIndex = row.getIndex();
+                    }
+
+                    activeGoalsTable.getItems().add(dropIndex, draggedGoal);
+
+                    event.setDropCompleted(true);
+                    activeGoalsTable.getSelectionModel().select(dropIndex);
+                    try {
+                        changeGoalIndex(dropIndex, draggedGoal);
+                    } catch (FaultlException e) {
+                        e.printStackTrace();
+                    }
+                    event.consume();
+                }
+            });
+
+            return row;
+        });
     }
 
     public void changeGoalIndex(int dropIndex, Goal draggedGoal) throws FaultlException {
@@ -937,7 +942,7 @@ public class MainFrameController {
 
                 if (newGoalTextField.getText().length() <= 300) {
                     for (Goal e : goalObservableList) {
-                        if (e.getId().equals(goalID.getText())) {
+                        if (String.valueOf(e.getId()).equals(goalID.getText())) {
                             e.setGoalName(newGoalTextField.getText());
                             break;
                         }
@@ -951,6 +956,7 @@ public class MainFrameController {
                     //odkomentowac
 //                    initialize();
                     newGoalTextField.setText(null);
+                    updateTableAndComboBox(goal.isActive());
                 } else {
                     addAlert("Błąd", "Max dł. tekstu to 300 znaków!");
                 }
@@ -1033,43 +1039,23 @@ public class MainFrameController {
 
     @FXML
     public void deleteGoalMethod(ActionEvent actionEvent) {
-        Goal goal = activeGoalsTable.getSelectionModel().getSelectedItem();
+        Goal goal;
+        if (activeTab.isSelected()) {
+            goal = activeGoalsTable.getSelectionModel().getSelectedItem();
+        } else {
+            goal = inactiveGoalsTable.getSelectionModel().getSelectedItem();
+        }
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation Dialog");
+        alert.setTitle("Deleting of Goal");
         alert.setHeaderText(null);
         alert.setContentText("Are you sure you want to delete selected?");
         Optional<ButtonType> action = alert.showAndWait();
 
         if (action.get() == ButtonType.OK) {
             try {
-                GoalDAO.getInstance().delete(goal);
                 Files.delete(Paths.get(goal.getId() + ".txt"));
-                goalObservableList.clear();
-                goalStringObservableList.clear();
-
-                if (goal.isActive()) {
-                    List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
-                    activeGoalList.forEach(e -> {
-                        goalObservableList.add(e);
-                    });
-                    goalObservableList.forEach(e -> {
-                        goalStringObservableList.add(e.getGoalName());
-                    });
-                    this.goalCombo.setItems(goalStringObservableList);
-                    activeGoalsTable.getItems().clear();
-                    activeGoalsTable.getItems().addAll(activeGoalList);
-                } else {
-                    List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
-                    inactiveGoalList.forEach(e -> {
-                        goalObservableList.add(e);
-                    });
-                    goalObservableList.forEach(e -> {
-                        goalStringObservableList.add(e.getGoalName());
-                    });
-                    this.goalCombo.setItems(goalStringObservableList);
-                    activeGoalsTable.getItems().clear();
-                    activeGoalsTable.getItems().addAll(inactiveGoalList);
-                }
+                GoalDAO.getInstance().delete(goal);
+                updateTableAndComboBox(goal.isActive());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1110,7 +1096,9 @@ public class MainFrameController {
             goal.setActive(true);
             try {
                 GoalDAO.getInstance().merge(goal);
-
+                //aktualizacja inactive table
+                //false because we are updating previous table
+                updateTableAndComboBox(false);
             } catch (FaultlException e) {
                 e.printStackTrace();
             }
@@ -1130,6 +1118,8 @@ public class MainFrameController {
             goal.setActive(false);
             try {
                 GoalDAO.getInstance().merge(goal);
+                //true because we are updating previous table
+                updateTableAndComboBox(true);
             } catch (FaultlException e) {
                 e.printStackTrace();
             }
@@ -1200,6 +1190,36 @@ public class MainFrameController {
 
             keyNode.setOnKeyPressed(keyEventHandler);
             keyNode.setOnKeyReleased(keyEventHandler);
+        }
+    }
+
+    private void updateTableAndComboBox(boolean isActive) {
+        if (isActive) {
+            goalObservableList.clear();
+            goalStringObservableList.clear();
+            List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
+            activeGoalList.forEach(e -> {
+                goalObservableList.add(e);
+            });
+            goalObservableList.forEach(e -> {
+                goalStringObservableList.add(e.getGoalName());
+            });
+            this.goalCombo.setItems(goalStringObservableList);
+            activeGoalsTable.getItems().clear();
+            activeGoalsTable.getItems().addAll(activeGoalList);
+        } else {
+            goalObservableList.clear();
+            goalStringObservableList.clear();
+            List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
+            inactiveGoalList.forEach(e -> {
+                goalObservableList.add(e);
+            });
+            goalObservableList.forEach(e -> {
+                goalStringObservableList.add(e.getGoalName());
+            });
+            this.goalCombo.setItems(goalStringObservableList);
+            inactiveGoalsTable.getItems().clear();
+            inactiveGoalsTable.getItems().addAll(inactiveGoalList);
         }
     }
 
