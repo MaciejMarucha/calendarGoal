@@ -213,8 +213,6 @@ public class MainFrameController {
     @FXML
     public void initialize() {
         initializeFrame();
-        goalObservableList.clear();
-        goalStringObservableList.clear();
 
         GoalDAO.getInstance().findAllInactive().forEach(e -> {
             goalObservableList.add(e);
