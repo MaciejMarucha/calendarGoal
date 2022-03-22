@@ -279,7 +279,6 @@ public class MainFrameController {
         tabPane.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab oldTab, Tab newTab) -> {
             //setting typed tab
             if (newTab == activeTab) {
-                System.out.println("activeTab");
                 goalObservableList.clear();
                 goalStringObservableList.clear();
                 List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
@@ -293,7 +292,6 @@ public class MainFrameController {
                 activeGoalsTable.getItems().clear();
                 activeGoalsTable.getItems().addAll(activeGoalList);
             } else if (newTab == inactiveTab) {
-                System.out.println("inactiveTab");
                 goalObservableList.clear();
                 goalStringObservableList.clear();
                 List<Goal> inactiveGoalList2 = GoalDAO.getInstance().findAllInactive();
@@ -1065,12 +1063,10 @@ public class MainFrameController {
     @FXML
     public void editGoalMethod(ActionEvent actionEvent) {
         if (activeTab.isSelected()) {
-            System.out.println("active tab is selected");
             Goal goal = activeGoalsTable.getSelectionModel().getSelectedItem();
             newGoalTextField.setText(goal.getGoalName());
             goalID.setText(Integer.toString(goal.getId()));
         } else {
-            System.out.println("inactive tab is selected");
             Goal goal = inactiveGoalsTable.getSelectionModel().getSelectedItem();
             newGoalTextField.setText(goal.getGoalName());
             goalID.setText(Integer.toString(goal.getId()));
