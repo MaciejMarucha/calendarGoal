@@ -69,7 +69,6 @@ public class GoalDAO {
 //    @SuppressWarnings("unchecked")
     public List<Goal> findAll() {
         return entityManager.createQuery("select g from Goal g order by g.sequence", Goal.class).getResultList();
-
     }
 
     public Goal findByGoalName(String goalName) {
@@ -90,6 +89,13 @@ public class GoalDAO {
         return query.getSingleResult() != null ? (int) query.getSingleResult() : -1;
     }
 
+    public List<Goal> findAllActive() {
+        return entityManager.createQuery("select g from Goal g where active=true order by g.sequence", Goal.class).getResultList();
+    }
+
+    public List<Goal> findAllInactive() {
+        return entityManager.createQuery("select g from Goal g where active=false order by g.sequence", Goal.class).getResultList();
+    }
     public void closeEntityManager() {
         entityManager.close();
     }

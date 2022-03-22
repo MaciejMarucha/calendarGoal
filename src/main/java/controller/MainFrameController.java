@@ -38,7 +38,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
@@ -158,11 +157,17 @@ public class MainFrameController {
     @FXML
     private ComboBox<String> goalCombo;
     @FXML
-    private TableView<Goal> goalsTable;
+    private TableView<Goal> activeGoalsTable;
+    @FXML
+    private TableView<Goal> inactiveGoalsTable;
     @FXML
     private MenuItem deleteGoal;
     @FXML
     private MenuItem editGoal;
+    @FXML
+    private MenuItem activeGoal;
+    @FXML
+    private MenuItem inactiveGoal;
     @FXML
     private TableColumn<Goal, String> colGoalName;
     @FXML
@@ -175,6 +180,12 @@ public class MainFrameController {
     private Button reset;
     @FXML
     private TextArea textAreaText;
+    @FXML
+    private TabPane tabPane;
+    @FXML
+    private Tab inactiveTab;
+    @FXML
+    private Tab activeTab;
 
     private boolean onOffDialog = true;
     private DateSelected dateSelected;
@@ -186,7 +197,7 @@ public class MainFrameController {
     private ObjectProperty<EOL> eolProperty;
     private Integer goalId;
     private ObservableList<Goal> goalObservableList = FXCollections.observableArrayList();
-    private ObservableList<String> goalStringList = FXCollections.observableArrayList();
+    private ObservableList<String> goalStringObservableList = FXCollections.observableArrayList();
     private StringProperty goalStringProperty = new SimpleStringProperty();
     private Points pointsField;
 
@@ -203,22 +214,22 @@ public class MainFrameController {
     public void initialize() {
         initializeFrame();
         goalObservableList.clear();
-        goalStringList.clear();
+        goalStringObservableList.clear();
 
-        GoalDAO.getInstance().findAll().forEach(e -> {
+        GoalDAO.getInstance().findAllInactive().forEach(e -> {
             goalObservableList.add(e);
         });
 
         goalObservableList.forEach(e -> {
-            goalStringList.add(e.getGoalName());
+            goalStringObservableList.add(e.getGoalName());
         });
-        this.goalCombo.setItems(goalStringList);
+        this.goalCombo.setItems(goalStringObservableList);
         goalStringProperty.bind(this.goalCombo.valueProperty());
         colGoalName.setCellValueFactory(new PropertyValueFactory<>("goalName"));
-        goalsTable.getItems().clear();
+        activeGoalsTable.getItems().clear();
 
-        List<Goal> goalList = GoalDAO.getInstance().findAll();
-        goalsTable.getItems().addAll(goalList);
+        List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
+        activeGoalsTable.getItems().addAll(activeGoalList);
         initializeDragAndDrop();
 //        installEventHandler(goalCombo);
 
@@ -264,6 +275,35 @@ public class MainFrameController {
                         }
                     }
                 });
+
+        tabPane.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends Tab> ov, Tab oldTab, Tab newTab) -> {
+            if (newTab == activeTab) {
+                System.out.println("activeTab");
+                activeGoalList.forEach(e -> {
+                    goalObservableList.add(e);
+                });
+                goalObservableList.forEach(e -> {
+                    goalStringObservableList.add(e.getGoalName());
+                });
+                this.goalCombo.setItems(goalStringObservableList);
+                activeGoalsTable.getItems().clear();
+                activeGoalsTable.getItems().addAll(activeGoalList);
+            } else if (newTab == inactiveTab) {
+                System.out.println("inactiveTab");
+                List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
+                inactiveGoalList.forEach(e -> {
+                    goalObservableList.add(e);
+                });
+                goalObservableList.forEach(e -> {
+                    goalStringObservableList.add(e.getGoalName());
+                });
+                this.goalCombo.setItems(goalStringObservableList);
+                inactiveGoalsTable.getItems().clear();
+                inactiveGoalsTable.getItems().addAll(inactiveGoalList);
+            }
+        });
+
+
         updatePoints();
     }
 
@@ -656,7 +696,7 @@ public class MainFrameController {
     }
 
     public void initializeDragAndDrop() {
-        goalsTable.setRowFactory(tv -> {
+        activeGoalsTable.setRowFactory(tv -> {
             TableRow<Goal> row = new TableRow<>();
 
             row.setOnDragDetected(event -> {
@@ -685,20 +725,75 @@ public class MainFrameController {
                 Dragboard db = event.getDragboard();
                 if (db.hasContent(SERIALIZED_MIME_TYPE)) {
                     int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
-                    Goal draggedGoal = goalsTable.getItems().remove(draggedIndex);
+                    Goal draggedGoal = activeGoalsTable.getItems().remove(draggedIndex);
 
                     int dropIndex;
 
                     if (row.isEmpty()) {
-                        dropIndex = goalsTable.getItems().size();
+                        dropIndex = activeGoalsTable.getItems().size();
                     } else {
                         dropIndex = row.getIndex();
                     }
 
-                    goalsTable.getItems().add(dropIndex, draggedGoal);
+                    activeGoalsTable.getItems().add(dropIndex, draggedGoal);
 
                     event.setDropCompleted(true);
-                    goalsTable.getSelectionModel().select(dropIndex);
+                    activeGoalsTable.getSelectionModel().select(dropIndex);
+                    try {
+                        changeGoalIndex(dropIndex, draggedGoal);
+                    } catch (FaultlException e) {
+                        e.printStackTrace();
+                    }
+                    event.consume();
+                }
+            });
+
+            return row;
+        });
+
+        inactiveGoalsTable.setRowFactory(tv -> {
+            TableRow<Goal> row = new TableRow<>();
+
+            row.setOnDragDetected(event -> {
+                if (!row.isEmpty()) {
+                    Integer index = row.getIndex();
+                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+                    db.setDragView(row.snapshot(null, null));
+                    ClipboardContent cc = new ClipboardContent();
+                    cc.put(SERIALIZED_MIME_TYPE, index);
+                    db.setContent(cc);
+                    event.consume();
+                }
+            });
+
+            row.setOnDragOver(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
+                        event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                        event.consume();
+                    }
+                }
+            });
+
+            row.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
+                    Goal draggedGoal = inactiveGoalsTable.getItems().remove(draggedIndex);
+
+                    int dropIndex;
+
+                    if (row.isEmpty()) {
+                        dropIndex = inactiveGoalsTable.getItems().size();
+                    } else {
+                        dropIndex = row.getIndex();
+                    }
+
+                    inactiveGoalsTable.getItems().add(dropIndex, draggedGoal);
+
+                    event.setDropCompleted(true);
+                    inactiveGoalsTable.getSelectionModel().select(dropIndex);
                     try {
                         changeGoalIndex(dropIndex, draggedGoal);
                     } catch (FaultlException e) {
@@ -818,9 +913,9 @@ public class MainFrameController {
 //                    GoalDAO.getInstance().newGoal(goal);
                     System.out.println("ID celu = " + goal.getId());
                     goalObservableList.add(goal);
-                    goalStringList.add(newGoalText);
-                    this.goalCombo.setItems(goalStringList);
-                    this.goalsTable.getItems().add(goal);
+                    goalStringObservableList.add(newGoalText);
+                    this.goalCombo.setItems(goalStringObservableList);
+                    this.inactiveGoalsTable.getItems().add(goal);
                     goalID.setText("");
                     //odkomentowac
 //                    initialize();
@@ -849,8 +944,8 @@ public class MainFrameController {
                             break;
                         }
                     }
-                    int index = goalStringList.indexOf(goal.getGoalName());
-                    goalStringList.set(index, newGoalTextField.getText());
+                    int index = goalStringObservableList.indexOf(goal.getGoalName());
+                    goalStringObservableList.set(index, newGoalTextField.getText());
 
                     goal.setGoalName(newGoalTextField.getText());
                     GoalDAO.getInstance().merge(goal);
@@ -940,7 +1035,7 @@ public class MainFrameController {
 
     @FXML
     public void deleteGoalMethod(ActionEvent actionEvent) {
-        Goal goal = goalsTable.getSelectionModel().getSelectedItem();
+        Goal goal = activeGoalsTable.getSelectionModel().getSelectedItem();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation Dialog");
         alert.setHeaderText(null);
@@ -948,36 +1043,54 @@ public class MainFrameController {
         Optional<ButtonType> action = alert.showAndWait();
 
         if (action.get() == ButtonType.OK) {
-//            dateGoalResultRepo.deleteAllByGoal(goal);
             try {
+                GoalDAO.getInstance().delete(goal);
                 Files.delete(Paths.get(goal.getId() + ".txt"));
-            } catch (NoSuchFileException e) {
-            } catch (IOException e) {
+                goalObservableList.clear();
+                goalStringObservableList.clear();
+
+                if (goal.isActive()) {
+                    List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
+                    activeGoalList.forEach(e -> {
+                        goalObservableList.add(e);
+                    });
+                    goalObservableList.forEach(e -> {
+                        goalStringObservableList.add(e.getGoalName());
+                    });
+                    this.goalCombo.setItems(goalStringObservableList);
+                    activeGoalsTable.getItems().clear();
+                    activeGoalsTable.getItems().addAll(activeGoalList);
+                } else {
+                    List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
+                    inactiveGoalList.forEach(e -> {
+                        goalObservableList.add(e);
+                    });
+                    goalObservableList.forEach(e -> {
+                        goalStringObservableList.add(e.getGoalName());
+                    });
+                    this.goalCombo.setItems(goalStringObservableList);
+                    activeGoalsTable.getItems().clear();
+                    activeGoalsTable.getItems().addAll(inactiveGoalList);
+                }
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            GoalDAO.getInstance().delete(goal);
         }
-//        if(action.get() == ButtonType.OK) goalRepository.delete(goal);
-        //odkomentowac
-        goalObservableList.clear();
-        goalStringList.clear();
-        GoalDAO.getInstance().findAll().forEach(e -> {
-            goalObservableList.add(e);
-        });
-        goalObservableList.forEach(e -> {
-            goalStringList.add(e.getGoalName());
-        });
-        this.goalCombo.setItems(goalStringList);
-        goalsTable.getItems().clear();
-        List<Goal> goalList = GoalDAO.getInstance().findAll();
-        goalsTable.getItems().addAll(goalList);
     }
 
     @FXML
     public void editGoalMethod(ActionEvent actionEvent) {
-        Goal goal = goalsTable.getSelectionModel().getSelectedItem();
-        newGoalTextField.setText(goal.getGoalName());
-        goalID.setText(Integer.toString(goal.getId()));
+        if (activeTab.isSelected()) {
+            System.out.println("active tab is selected");
+            Goal goal = activeGoalsTable.getSelectionModel().getSelectedItem();
+            newGoalTextField.setText(goal.getGoalName());
+            goalID.setText(Integer.toString(goal.getId()));
+        } else {
+            System.out.println("inactive tab is selected");
+            Goal goal = inactiveGoalsTable.getSelectionModel().getSelectedItem();
+            newGoalTextField.setText(goal.getGoalName());
+            goalID.setText(Integer.toString(goal.getId()));
+        }
     }
 
     @FXML
@@ -985,6 +1098,46 @@ public class MainFrameController {
         goalID.setText(null);
         newGoalTextField.setText(null);
     }
+
+    @FXML
+    public void changeToActiveGoalMethod(ActionEvent actionEvent) {
+        Goal goal = inactiveGoalsTable.getSelectionModel().getSelectedItem();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to change status to ACTIVE?");
+        Optional<ButtonType> action = alert.showAndWait();
+
+        if (action.get() == ButtonType.OK) {
+            goal.setActive(true);
+            try {
+                GoalDAO.getInstance().merge(goal);
+
+            } catch (FaultlException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    public void changeToInactiveGoalMethod(ActionEvent actionEvent) {
+        Goal goal = activeGoalsTable.getSelectionModel().getSelectedItem();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation Dialog");
+        alert.setHeaderText(null);
+        alert.setContentText("Are you sure you want to change status to INACTIVE?");
+        Optional<ButtonType> action = alert.showAndWait();
+
+        if (action.get() == ButtonType.OK) {
+            goal.setActive(false);
+            try {
+                GoalDAO.getInstance().merge(goal);
+            } catch (FaultlException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private static final class Key {
         private final KeyCode keyCode;

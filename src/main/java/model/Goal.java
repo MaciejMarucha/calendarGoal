@@ -22,8 +22,8 @@ public class Goal implements Serializable {
     @Column(nullable = false)
     @Min(1)
     private String goalName;
-
     private Integer sequence;
+    private boolean active = false;
 
     @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval=true)
     private List<DateGoalResult> dateGoalResultList;
