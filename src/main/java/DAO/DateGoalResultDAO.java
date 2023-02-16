@@ -96,6 +96,13 @@ public class DateGoalResultDAO {
         return query.getResultList();
     }
 
+    public LocalDate selectLastDateForGoalId(Integer goalId) {
+        Query query = entityManager.createQuery(
+                "SELECT max(d.localDate) FROM DateGoalResult d WHERE d.goal.id = :goalId");
+        query.setParameter("goalId", goalId);
+        return (LocalDate) query.getSingleResult();
+    }
+
     public void closeEntityManager() {
         entityManager.close();
     }

@@ -41,6 +41,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -212,9 +213,33 @@ public class MainFrameController {
         pointsField = new Points();
     }
 
+    private void updateGoalsDateTable() throws IOException {
+        LocalDate now = LocalDate.now();
+        List<Goal> activeGoalList = GoalDAO.getInstance().findAllActive();
+        for (Goal goal : activeGoalList) {
+            LocalDate lastUpdatedDate = DateGoalResultDAO.getInstance().selectLastDateForGoalId(goal.getId());
+            System.out.println(lastUpdatedDate);
+            Period period = Period.between(lastUpdatedDate, now);
+            if (period.getDays() >= 2)
+                funcjaNaCzerwono(goal, lastUpdatedDate, period.getDays());
+        }
+    }
+
+    private void funcjaNaCzerwono(Goal goal, LocalDate lastUpdatedDate, int roznica) throws IOException {
+        while (roznica >= 2) {
+            DateGoalResultDAO.getInstance().persist(new DateGoalResult(lastUpdatedDate, goal, 2));
+            pointsField.subtractPoints(1);
+            updatePoints();
+            lastUpdatedDate = lastUpdatedDate.plusDays(1);
+            roznica--;
+        }
+    }
+
     @FXML
-    public void initialize() {
+    public void initialize() throws IOException {
+        System.out.println("metoda initialize()");
         initializeFrame();
+        updateGoalsDateTable();
         List<Goal> inactiveGoalList = GoalDAO.getInstance().findAllInactive();
         inactiveGoalList.forEach(e -> {
             goalObservableList.add(e);
@@ -1123,71 +1148,72 @@ public class MainFrameController {
     }
 
 
-    private static final class Key {
-        private final KeyCode keyCode;
-        private final BooleanProperty pressedProperty;
+private static final class Key {
+    private final KeyCode keyCode;
+    private final BooleanProperty pressedProperty;
 
-        public Key(final KeyCode keyCode) {
-            this.keyCode = keyCode;
-            this.pressedProperty = new SimpleBooleanProperty(this, "pressed");
-        }
-
-        public KeyCode getKeyCode() {
-            return keyCode;
-        }
-
-        public boolean isPressed() {
-            return pressedProperty.get();
-        }
-
-        public void setPressed(final boolean value) {
-            pressedProperty.set(value);
-        }
-
-        public Node createNode() {
-            final StackPane keyNode = new StackPane();
-            keyNode.setFocusTraversable(true);
-            installEventHandler(keyNode);
-
-            final Rectangle keyBackground = new Rectangle(50, 50);
-            keyBackground.fillProperty().bind(
-                    Bindings.when(pressedProperty)
-                            .then(Color.RED)
-                            .otherwise(Bindings.when(keyNode.focusedProperty())
-                                    .then(Color.LIGHTGRAY)
-                                    .otherwise(Color.WHITE)));
-            keyBackground.setStroke(Color.BLACK);
-            keyBackground.setStrokeWidth(2);
-            keyBackground.setArcWidth(12);
-            keyBackground.setArcHeight(12);
-
-            final Text keyLabel = new Text(keyCode.getName());
-            keyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-            keyNode.getChildren().addAll(keyBackground, keyLabel);
-
-            return keyNode;
-        }
-
-        private void installEventHandler(final Node keyNode) {
-            // handler for enter key press / release events, other keys are
-            // handled by the parent (keyboard) node handler
-            final EventHandler<KeyEvent> keyEventHandler =
-                    new EventHandler<KeyEvent>() {
-                        public void handle(final KeyEvent keyEvent) {
-                            if (keyEvent.getCode() == KeyCode.ENTER) {
-                                setPressed(keyEvent.getEventType()
-                                        == KeyEvent.KEY_PRESSED);
-
-                                keyEvent.consume();
-                            }
-                        }
-                    };
-
-            keyNode.setOnKeyPressed(keyEventHandler);
-            keyNode.setOnKeyReleased(keyEventHandler);
-        }
+    public Key(final KeyCode keyCode) {
+        this.keyCode = keyCode;
+        this.pressedProperty = new SimpleBooleanProperty(this, "pressed");
     }
+
+    public KeyCode getKeyCode() {
+        return keyCode;
+    }
+
+    public boolean isPressed() {
+        return pressedProperty.get();
+    }
+
+    public void setPressed(final boolean value) {
+        pressedProperty.set(value);
+    }
+
+    public Node createNode() {
+        final StackPane keyNode = new StackPane();
+        keyNode.setFocusTraversable(true);
+        installEventHandler(keyNode);
+
+        final Rectangle keyBackground = new Rectangle(50, 50);
+        keyBackground.fillProperty().bind(
+                Bindings.when(pressedProperty)
+                        .then(Color.RED)
+                        .otherwise(Bindings.when(keyNode.focusedProperty())
+                                .then(Color.LIGHTGRAY)
+                                .otherwise(Color.WHITE)));
+        keyBackground.setStroke(Color.BLACK);
+        keyBackground.setStrokeWidth(2);
+        keyBackground.setArcWidth(12);
+        keyBackground.setArcHeight(12);
+
+        final Text keyLabel = new Text(keyCode.getName());
+        keyLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+
+        keyNode.getChildren().addAll(keyBackground, keyLabel);
+
+        return keyNode;
+    }
+
+    private void installEventHandler(final Node keyNode) {
+        // handler for enter key press / release events, other keys are
+        // handled by the parent (keyboard) node handler
+        final EventHandler<KeyEvent> keyEventHandler =
+                new EventHandler<KeyEvent>() {
+                    public void handle(final KeyEvent keyEvent) {
+                        if (keyEvent.getCode() == KeyCode.ENTER) {
+                            setPressed(keyEvent.getEventType()
+                                    == KeyEvent.KEY_PRESSED);
+
+                            keyEvent.consume();
+                        }
+                    }
+                };
+
+        keyNode.setOnKeyPressed(keyEventHandler);
+        keyNode.setOnKeyReleased(keyEventHandler);
+    }
+
+}
 
     private void updateTableAndComboBox(boolean isActive) {
         if (isActive) {
